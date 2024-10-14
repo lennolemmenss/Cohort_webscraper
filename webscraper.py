@@ -33,6 +33,13 @@ def decompress_gz_to_tsv(gz_file, tsv_file):
 
 def scrape_tcga_data():
     base_url = "https://xenabrowser.net/datapages/?hub=https://tcga.xenahubs.net:443"
+    
+    # Create the 'cohorts' directory if it doesn't exist
+    output_dir = "cohorts"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Created directory: {output_dir}")
+    
     driver = setup_driver()
     
     try:
@@ -83,13 +90,15 @@ def scrape_tcga_data():
                 )
                 download_url = download_link.get_attribute('href')
 
+                # Set the file paths inside the 'cohorts' directory
+                gz_file_name = os.path.join(output_dir, f"{cohort_name.replace(' ', '_')}_HiSeqV2_PANCAN.gz")
+                tsv_file_name = gz_file_name.replace(".gz", ".tsv")
+
                 # Download the file
-                gz_file_name = f"{cohort_name.replace(' ', '_')}_HiSeqV2_PANCAN.gz"
                 download_file(download_url, gz_file_name)
                 print(f"Downloaded: {gz_file_name}")
 
                 # Decompress the .gz file to a .tsv file
-                tsv_file_name = gz_file_name.replace(".gz", ".tsv")
                 decompress_gz_to_tsv(gz_file_name, tsv_file_name)
 
             except (TimeoutException, NoSuchElementException) as e:
